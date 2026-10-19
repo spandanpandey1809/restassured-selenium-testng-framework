@@ -1,0 +1,11 @@
+{
+  "firstname": "Spandan",
+  "lastname": "Pandey",
+  "totalprice": 4500,
+  "depositpaid": true,
+  "bookingdates": {
+    "checkin": "2026-12-01",
+    "checkout": "2026-12-05"
+  },
+  "additionalneeds": "Breakfast"
+}
