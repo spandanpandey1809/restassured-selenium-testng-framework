@@ -12,10 +12,12 @@ on:
       suite:
         description: "Suite to run"
         required: true
-        default: "api-suite.xml"
+        default: "all"
         type: choice
         options:
+          - all
           - api-suite.xml
+          - ui-suite.xml
 
 jobs:
   test:
@@ -36,7 +38,14 @@ jobs:
       - name: Run tests
         run: |
           set -o pipefail
-          mvn -B test -Dsuite=${{ github.event.inputs.suite || 'api-suite.xml' }} -Dheadless=true 2>&1 | tee build.log
+          choice="${{ github.event.inputs.suite || 'all' }}"
+          if [ "$choice" = "all" ]; then suites="api-suite.xml ui-suite.xml"; else suites="$choice"; fi
+          status=0
+          for s in $suites; do
+            echo "=== Running $s ==="
+            mvn -B test -Dsuite=$s -Dheadless=true 2>&1 | tee -a build.log || status=1
+          done
+          exit $status
 
       # Surface build errors and failed tests as annotations on the run summary
       - name: Summarise failures
