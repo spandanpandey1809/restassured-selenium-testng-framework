@@ -34,7 +34,16 @@ jobs:
           cache: maven
 
       - name: Run tests
-        run: mvn -B test -Dsuite=${{ github.event.inputs.suite || 'api-suite.xml' }} -Dheadless=true
+        run: |
+          set -o pipefail
+          mvn -B test -Dsuite=${{ github.event.inputs.suite || 'api-suite.xml' }} -Dheadless=true 2>&1 | tee build.log
+
+      # Surface build errors and failed tests as annotations on the run summary
+      - name: Summarise failures
+        if: failure()
+        run: |
+          msg=$(grep -E "\[ERROR\]|Tests run:|FAILED|Exception|expected" build.log | grep -v "^\[ERROR\] *$" | head -40 | cut -c1-300 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+          echo "::error title=Build and test failures::${msg}"
 
       - name: Generate Allure report
         if: always()
