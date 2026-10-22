@@ -1,0 +1,15 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!-- Quick check of critical flows only (tests tagged "smoke"). -->
+<suite name="Smoke Suite" parallel="classes" thread-count="3">
+    <test name="Smoke">
+        <groups>
+            <run>
+                <include name="smoke"/>
+            </run>
+        </groups>
+        <packages>
+            <package name="com.spandan.tests.api"/>
+            <package name="com.spandan.tests.ui"/>
+        </packages>
+    </test>
+</suite>

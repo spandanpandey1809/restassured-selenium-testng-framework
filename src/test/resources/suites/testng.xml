@@ -1,0 +1,14 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!-- Full regression: API and UI tests. Classes run in parallel; UI uses one browser per thread. -->
+<suite name="Full Regression" parallel="classes" thread-count="3">
+    <test name="API Tests">
+        <packages>
+            <package name="com.spandan.tests.api"/>
+        </packages>
+    </test>
+    <test name="UI Tests">
+        <packages>
+            <package name="com.spandan.tests.ui"/>
+        </packages>
+    </test>
+</suite>
