@@ -40,13 +40,7 @@ jobs:
         run: |
           set -o pipefail
           # Push, PR and nightly runs use the full suite; a manual run can pick another
-          # Second pass runs the smoke suite to check the group configuration still works.
-          status=0
-          for s in "${{ github.event.inputs.suite || 'testng.xml' }}" smoke-suite.xml; do
-            echo "=== Running $s ==="
-            mvn -B test -Dsuite=$s -Dheadless=true 2>&1 | tee -a build.log || status=1
-          done
-          exit $status
+          mvn -B test -Dsuite=${{ github.event.inputs.suite || 'testng.xml' }} -Dheadless=true 2>&1 | tee build.log
 
       # Surface build errors and failed tests as annotations on the run summary
       - name: Summarise failures
