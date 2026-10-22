@@ -60,3 +60,26 @@ jobs:
           name: allure-report
           path: target/site/allure-maven-plugin
           retention-days: 14
+
+  docker:
+    name: API tests in Docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Build test image
+        run: docker build -t rst-tests .
+
+      - name: Run API suite in a container
+        run: |
+          set -o pipefail
+          docker run --rm -e SUITE=api-suite.xml rst-tests 2>&1 | tee docker.log
+
+      - name: Summarise failures
+        if: failure()
+        run: |
+          msg=$(grep -E "\[ERROR\]|Tests run:|FAILED|Exception|expected|ERROR" docker.log | head -40 | cut -c1-300 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+          echo "::error title=Docker run failures::${msg}"

@@ -11,6 +11,7 @@ A Java test automation framework for **REST API** and **web UI** testing, with A
 | Test runner | TestNG: groups, data providers, dependent tests, parallel execution |
 | Reporting | Allure: steps, request/response logs, screenshots on failure |
 | CI/CD | GitHub Actions: push, pull request, nightly schedule, manual suite choice |
+| Containers | Docker test-runner image with cached dependencies |
 | Build | Maven, Java 17 |
 
 ## Applications under test
@@ -68,6 +69,19 @@ mvn allure:serve                              # open the Allure report in a brow
 
 In CI, the Allure report is uploaded as a build artifact, and failures are summarised as annotations on the run.
 
+### Run in Docker
+
+No local Java or Maven needed. Dependencies are cached in an image layer that only rebuilds when `pom.xml` changes.
+
+```bash
+docker build -t rst-tests .
+docker run --rm rst-tests                                  # API suite (default)
+docker run --rm -e SUITE=smoke-suite.xml rst-tests         # pick a suite
+docker run --rm -v "$PWD/target:/tests/target" rst-tests   # keep Allure results on the host
+```
+
+CI runs the API suite in this container as a separate job on every push.
+
 ## Design decisions
 
 - **Service layer for APIs:** tests call `BookingService` methods, never raw requests, so an endpoint change is fixed in one place.
@@ -86,7 +100,8 @@ In CI, the Allure report is uploaded as a build artifact, and failures are summa
 
 ## Roadmap
 
-- [ ] Run the suite in Docker, and UI tests on Selenium Grid via docker-compose
+- [x] Run the suite in a Docker container, locally and in CI
+- [ ] Run UI tests on Selenium Grid via docker-compose
 - [ ] Run the booking API in a container and stub downstream failures with WireMock
 - [ ] Publish the Allure report to GitHub Pages
 - [ ] Mobile tests with Appium on the Sauce Labs demo Android app
