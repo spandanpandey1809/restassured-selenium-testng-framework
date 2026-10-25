@@ -1,6 +1,7 @@
 # Rest Assured + Selenium + TestNG Automation Framework
 
 ![Tests](https://github.com/spandanpandey1809/restassured-selenium-testng-framework/actions/workflows/tests.yml/badge.svg)
+[![Live report](https://img.shields.io/badge/Allure-live%20report-orange)](https://spandanpandey1809.github.io/restassured-selenium-testng-framework/)
 
 A Java test automation framework for **REST API** and **web UI** testing, with Allure reporting and CI on GitHub Actions. Tests run on every push and nightly.
 
