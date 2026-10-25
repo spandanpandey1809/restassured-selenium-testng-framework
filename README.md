@@ -10,7 +10,7 @@ A Java test automation framework for **REST API** and **web UI** testing, with A
 | Service virtualization | WireMock stubs for slow, failing and contract-breaking dependencies |
 | UI testing | Selenium 4, Page Object Model, explicit waits, thread-safe WebDriver |
 | Test runner | TestNG: groups, data providers, dependent tests, parallel execution |
-| Reporting | Allure: steps, request/response logs, screenshots on failure |
+| Reporting | Allure: steps, request/response logs, screenshots on failure, published to GitHub Pages |
 | CI/CD | GitHub Actions: push, pull request, nightly schedule, manual suite choice |
 | Containers | Docker test-runner image, docker-compose with Selenium Grid (RemoteWebDriver) |
 | Build | Maven, Java 17 |
@@ -69,7 +69,7 @@ mvn test -Dbrowser=firefox -Dheadless=false   # watch UI tests in Firefox
 mvn allure:serve                              # open the Allure report in a browser
 ```
 
-In CI, the Allure report is uploaded as a build artifact, and failures are summarised as annotations on the run.
+In CI, the Allure report is published to GitHub Pages after every main-branch run: **[live test report](https://spandanpandey1809.github.io/restassured-selenium-testng-framework/)**. It is also kept as a build artifact, and failures are summarised as annotations on the run.
 
 ### Run in Docker
 
@@ -118,5 +118,5 @@ CI runs the full suite this way as a separate job on every push.
 - [x] Run the suite in a Docker container, locally and in CI
 - [x] Run UI tests on Selenium Grid via docker-compose
 - [x] Stub dependency failures with WireMock (timeouts, outages, contract breaks)
-- [ ] Publish the Allure report to GitHub Pages
+- [x] Publish the Allure report to GitHub Pages
 - [ ] Mobile tests with Appium on the Sauce Labs demo Android app

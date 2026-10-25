@@ -61,6 +61,32 @@ jobs:
           path: target/site/allure-maven-plugin
           retention-days: 14
 
+      # Only main-branch runs (push, nightly, manual) publish the live report; pull requests don't
+      - name: Package report for GitHub Pages
+        if: always() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: target/site/allure-maven-plugin
+
+  publish-report:
+    name: Publish Allure report to GitHub Pages
+    needs: test
+    if: always() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    # Publishing the report must never turn the test pipeline red
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      - name: Deploy report
+        id: deploy
+        uses: actions/deploy-pages@v4
+
   docker:
     name: Full suite in Docker with Selenium Grid
     runs-on: ubuntu-latest
