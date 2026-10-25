@@ -14,7 +14,8 @@ RUN mvn -B -q dependency:go-offline || true
 
 COPY src ./src
 
-# UI suites need a browser; inside a container they run against Selenium Grid (see docker-compose).
+# UI suites need a browser; inside a container they run against Selenium Grid (see docker-compose.yml).
 ENV SUITE=api-suite.xml
+ENV GRID_URL=""
 
-ENTRYPOINT ["sh", "-c", "mvn -B test -Dsuite=${SUITE} -Dheadless=true"]
+ENTRYPOINT ["sh", "-c", "mvn -B test -Dsuite=${SUITE} -Dheadless=true -Dgrid.url=${GRID_URL}"]

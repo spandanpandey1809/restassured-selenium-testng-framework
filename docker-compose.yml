@@ -1,0 +1,29 @@
+# Full suite in containers: a Selenium Grid Chrome node plus the test-runner image.
+#   docker compose up --build --exit-code-from tests
+#   docker compose down
+services:
+  chrome:
+    image: selenium/standalone-chrome:4.25.0
+    shm_size: 2gb                       # Chrome crashes with Docker's default 64 MB /dev/shm
+    environment:
+      SE_NODE_MAX_SESSIONS: "3"         # match TestNG thread-count so parallel tests don't queue
+      SE_NODE_OVERRIDE_MAX_SESSIONS: "true"
+    ports:
+      - "4444:4444"                     # Grid UI at http://localhost:4444
+      - "7900:7900"                     # watch the browser via noVNC (password: secret)
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4444/status"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+
+  tests:
+    build: .
+    depends_on:
+      chrome:
+        condition: service_healthy      # start tests only once the Grid reports ready
+    environment:
+      SUITE: testng.xml
+      GRID_URL: http://chrome:4444
+    volumes:
+      - ./target:/tests/target          # Allure results end up on the host

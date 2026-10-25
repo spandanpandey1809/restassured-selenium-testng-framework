@@ -1,6 +1,7 @@
 package com.spandan.framework.ui;
 
 import com.spandan.framework.config.ConfigManager;
+import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -8,13 +9,19 @@ import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.remote.RemoteWebDriver;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.Duration;
 import java.util.Map;
 
 /**
  * Creates one WebDriver per thread so UI tests can run in parallel safely.
- * Selenium Manager (built into Selenium 4) downloads the matching driver automatically.
+ *
+ * Local run: Selenium Manager (built into Selenium 4) downloads the matching driver automatically.
+ * Grid run:  set -Dgrid.url=http://host:4444 and the same browser options are sent to Selenium Grid
+ *            through RemoteWebDriver (see docker-compose.yml).
  */
 public final class DriverFactory {
 
@@ -26,17 +33,26 @@ public final class DriverFactory {
     public static void initDriver() {
         String browser = ConfigManager.get("browser").toLowerCase();
         boolean headless = ConfigManager.getBoolean("headless");
+        String gridUrl = ConfigManager.get("grid.url");
 
-        WebDriver driver = switch (browser) {
+        MutableCapabilities options = browserOptions(browser, headless);
+        WebDriver driver = gridUrl.isEmpty() ? localDriver(browser, options) : remoteDriver(gridUrl, options);
+
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(ConfigManager.getInt("implicit.wait.seconds")));
+        DRIVER.set(driver);
+    }
+
+    private static MutableCapabilities browserOptions(String browser, boolean headless) {
+        return switch (browser) {
             case "firefox" -> {
                 FirefoxOptions options = new FirefoxOptions();
                 if (headless) options.addArguments("-headless");
-                yield new FirefoxDriver(options);
+                yield options;
             }
             case "edge" -> {
                 EdgeOptions options = new EdgeOptions();
                 if (headless) options.addArguments("--headless=new");
-                yield new EdgeDriver(options);
+                yield options;
             }
             default -> {
                 ChromeOptions options = new ChromeOptions();
@@ -49,12 +65,25 @@ public final class DriverFactory {
                         "credentials_enable_service", false,
                         "profile.password_manager_enabled", false,
                         "profile.password_manager_leak_detection", false));
-                yield new ChromeDriver(options);
+                yield options;
             }
         };
+    }
 
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(ConfigManager.getInt("implicit.wait.seconds")));
-        DRIVER.set(driver);
+    private static WebDriver localDriver(String browser, MutableCapabilities options) {
+        return switch (browser) {
+            case "firefox" -> new FirefoxDriver((FirefoxOptions) options);
+            case "edge" -> new EdgeDriver((EdgeOptions) options);
+            default -> new ChromeDriver((ChromeOptions) options);
+        };
+    }
+
+    private static WebDriver remoteDriver(String gridUrl, MutableCapabilities options) {
+        try {
+            return new RemoteWebDriver(new URL(gridUrl), options);
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException("Invalid grid.url: " + gridUrl, e);
+        }
     }
 
     public static WebDriver getDriver() {

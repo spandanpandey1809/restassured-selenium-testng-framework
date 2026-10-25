@@ -11,7 +11,7 @@ A Java test automation framework for **REST API** and **web UI** testing, with A
 | Test runner | TestNG: groups, data providers, dependent tests, parallel execution |
 | Reporting | Allure: steps, request/response logs, screenshots on failure |
 | CI/CD | GitHub Actions: push, pull request, nightly schedule, manual suite choice |
-| Containers | Docker test-runner image with cached dependencies |
+| Containers | Docker test-runner image, docker-compose with Selenium Grid (RemoteWebDriver) |
 | Build | Maven, Java 17 |
 
 ## Applications under test
@@ -27,7 +27,7 @@ src/main/java/com/spandan/framework
 ├── api/ApiClient.java             # shared request spec: base URL, headers, logging, Allure filter
 ├── api/BookingService.java        # service layer: one method per endpoint
 ├── api/models/                    # Booking POJOs with a fluent builder
-├── ui/DriverFactory.java          # ThreadLocal WebDriver (Chrome / Firefox / Edge)
+├── ui/DriverFactory.java          # ThreadLocal WebDriver, local or Selenium Grid (Chrome / Firefox / Edge)
 ├── ui/BasePage.java               # common actions with explicit waits
 ├── ui/pages/                      # Page Objects: Login, Inventory, Cart, Checkout
 └── utils/TestDataReader.java      # JSON test data -> POJOs
@@ -80,7 +80,18 @@ docker run --rm -e SUITE=smoke-suite.xml rst-tests         # pick a suite
 docker run --rm -v "$PWD/target:/tests/target" rst-tests   # keep Allure results on the host
 ```
 
-CI runs the API suite in this container as a separate job on every push.
+### Run everything in containers with Selenium Grid
+
+`docker-compose.yml` starts a Selenium Grid Chrome node and the test runner. UI tests switch to `RemoteWebDriver` when `grid.url` is set, using the same browser options as a local run.
+
+```bash
+docker compose up --build --exit-code-from tests   # full suite: API + UI on the Grid
+docker compose down
+```
+
+While it runs, the Grid console is at http://localhost:4444 and you can watch the browser at http://localhost:7900 (password `secret`). Locally without Docker, point at any Grid with `mvn test -Dgrid.url=http://localhost:4444`.
+
+CI runs the full suite this way as a separate job on every push.
 
 ## Design decisions
 
@@ -101,7 +112,7 @@ CI runs the API suite in this container as a separate job on every push.
 ## Roadmap
 
 - [x] Run the suite in a Docker container, locally and in CI
-- [ ] Run UI tests on Selenium Grid via docker-compose
+- [x] Run UI tests on Selenium Grid via docker-compose
 - [ ] Run the booking API in a container and stub downstream failures with WireMock
 - [ ] Publish the Allure report to GitHub Pages
 - [ ] Mobile tests with Appium on the Sauce Labs demo Android app
