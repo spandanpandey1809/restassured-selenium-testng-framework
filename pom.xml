@@ -60,6 +60,14 @@
             <version>${jackson.version}</version>
         </dependency>
 
+        <!-- Service virtualization: stub HTTP dependencies (standalone jar avoids Jetty clashes with Selenium) -->
+        <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock-standalone</artifactId>
+            <version>3.9.1</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Reporting -->
         <dependency>
             <groupId>io.qameta.allure</groupId>

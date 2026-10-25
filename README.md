@@ -7,6 +7,7 @@ A Java test automation framework for **REST API** and **web UI** testing, with A
 | Layer | Tools |
 | --- | --- |
 | API testing | Rest Assured, JSON Schema validation, POJOs with Jackson, service layer |
+| Service virtualization | WireMock stubs for slow, failing and contract-breaking dependencies |
 | UI testing | Selenium 4, Page Object Model, explicit waits, thread-safe WebDriver |
 | Test runner | TestNG: groups, data providers, dependent tests, parallel execution |
 | Reporting | Allure: steps, request/response logs, screenshots on failure |
@@ -33,7 +34,7 @@ src/main/java/com/spandan/framework
 └── utils/TestDataReader.java      # JSON test data -> POJOs
 
 src/test/java/com/spandan/tests
-├── api/                           # AuthTest, BookingCrudTest, BookingNegativeTest
+├── api/                           # AuthTest, BookingCrudTest, BookingNegativeTest, ApiResilienceTest
 └── ui/                            # BaseUiTest, LoginTest, CartAndCheckoutTest
 
 src/test/resources
@@ -50,6 +51,7 @@ src/test/resources
 | Auth API | Valid token; invalid credentials (data-driven) |
 | Booking API | Create, get with schema validation, filter by name, PUT, PATCH, DELETE, list |
 | API negative | No token / invalid token (403), missing booking (404), invalid payload |
+| API resilience (WireMock) | Timeout on a slow service, 503 outage with Retry-After, schema catches a contract break, client sends the headers the API accepts |
 | Login UI | Valid login; locked user, wrong password, empty fields (data-driven) |
 | Cart and checkout UI | Add to cart, sort by price, full checkout, form validation |
 
@@ -96,7 +98,9 @@ CI runs the full suite this way as a separate job on every push.
 ## Design decisions
 
 - **Service layer for APIs:** tests call `BookingService` methods, never raw requests, so an endpoint change is fixed in one place.
-- **One shared request spec:** headers, logging and Allure capture live in `ApiClient`.
+- **One shared request spec:** headers, timeouts, logging and Allure capture live in `ApiClient`.
+- **Timeouts on every API call:** a slow dependency fails fast with a clear error instead of hanging CI.
+- **WireMock for what the real service can't do on demand:** `BookingService` accepts any request spec, so the same service layer runs against a stub to test slowness, outages and contract breaks.
 - **Dependent CRUD tests:** if creating a booking fails, the later steps are skipped instead of failing with misleading errors.
 - **Fresh browser per test, one per thread:** tests stay independent and can run in parallel.
 - **Screenshots in `@AfterMethod`:** captured before the browser quits, and never allowed to hide the real failure.
@@ -113,6 +117,6 @@ CI runs the full suite this way as a separate job on every push.
 
 - [x] Run the suite in a Docker container, locally and in CI
 - [x] Run UI tests on Selenium Grid via docker-compose
-- [ ] Run the booking API in a container and stub downstream failures with WireMock
+- [x] Stub dependency failures with WireMock (timeouts, outages, contract breaks)
 - [ ] Publish the Allure report to GitHub Pages
 - [ ] Mobile tests with Appium on the Sauce Labs demo Android app
