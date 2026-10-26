@@ -5,6 +5,8 @@
 
 A Java test automation framework for **REST API** and **web UI** testing, with Allure reporting and CI on GitHub Actions. Tests run on every push and nightly.
 
+Mobile (Android) automation lives in the companion repo: [appium-testng-mobile-framework](https://github.com/spandanpandey1809/appium-testng-mobile-framework).
+
 | Layer | Tools |
 | --- | --- |
 | API testing | Rest Assured, JSON Schema validation, POJOs with Jackson, service layer |
@@ -120,4 +122,4 @@ CI runs the full suite this way as a separate job on every push.
 - [x] Run UI tests on Selenium Grid via docker-compose
 - [x] Stub dependency failures with WireMock (timeouts, outages, contract breaks)
 - [x] Publish the Allure report to GitHub Pages
-- [ ] Mobile tests with Appium on the Sauce Labs demo Android app
+- [x] Mobile tests with Appium: moved to their own repo, [appium-testng-mobile-framework](https://github.com/spandanpandey1809/appium-testng-mobile-framework)
